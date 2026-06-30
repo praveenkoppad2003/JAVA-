@@ -1,0 +1,13 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: task-api
+  profiles:
+    active: dev
+
+app:
+  version: 1.0.0
+  mode: default
+  max-tasks: 100

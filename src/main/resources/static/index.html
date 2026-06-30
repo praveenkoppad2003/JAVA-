@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spring Boot Fundamentals Lab</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="bg-glow bg-glow-a"></div>
+<div class="bg-glow bg-glow-b"></div>
+
+<header class="hero reveal">
+    <p class="tag">Local Workshop Web App</p>
+    <h1>Spring Boot Fundamentals Lab</h1>
+    <p class="hero-text">
+        Learn Spring Boot by interacting with a live Task Handler API.
+        Everything here is served locally by your own backend. Capture student roll numbers,
+        run quizzes, and generate a downloadable grade report.
+    </p>
+    <div class="profile-strip">
+        <div class="pill">
+            <span>Version</span>
+            <strong id="pillVersion">...</strong>
+        </div>
+        <div class="pill">
+            <span>Mode</span>
+            <strong id="pillMode">...</strong>
+        </div>
+        <div class="pill">
+            <span>Port</span>
+            <strong id="pillPort">...</strong>
+        </div>
+        <div class="pill">
+            <span>API Calls</span>
+            <strong id="pillApiCalls">0</strong>
+        </div>
+    </div>
+</header>
+
+<main>
+    <section class="panel reveal">
+        <div class="panel-head">
+            <h2>Core Concepts</h2>
+            <p>These map directly to the code in your Spring Boot project.</p>
+        </div>
+        <div class="concept-grid">
+            <article class="concept-card">
+                <h3>Controller</h3>
+                <p>Handles incoming HTTP requests and returns HTTP responses.</p>
+                <code>/tasks, /tasks/{id}, /tasks/info</code>
+            </article>
+            <article class="concept-card">
+                <h3>Service</h3>
+                <p>Contains business logic and manages in-memory task data.</p>
+                <code>HashMap + AtomicLong</code>
+            </article>
+            <article class="concept-card">
+                <h3>Model</h3>
+                <p>Plain Java object representing a task in request/response JSON.</p>
+                <code>id, title, status</code>
+            </article>
+            <article class="concept-card">
+                <h3>Profiles</h3>
+                <p>Switch runtime behavior across environments.</p>
+                <code>application-dev.yml / application-prod.yml</code>
+            </article>
+        </div>
+    </section>
+
+    <section class="layout">
+        <section class="panel reveal">
+            <div class="panel-head">
+                <h2>Student Session</h2>
+                <p>Capture learner details before quiz and report generation.</p>
+            </div>
+
+            <form id="studentForm" class="student-form">
+                <label>
+                    Student Roll Number
+                    <input id="studentRoll" type="text" placeholder="MCA24CS001" required>
+                </label>
+                <label>
+                    Student Name
+                    <input id="studentName" type="text" placeholder="Optional">
+                </label>
+                <label>
+                    Batch / Section
+                    <input id="studentBatch" type="text" placeholder="MCA 2026 - A">
+                </label>
+                <div class="button-row">
+                    <button type="submit">Save Student Session</button>
+                    <button id="clearStudent" type="button" class="secondary">Clear</button>
+                </div>
+            </form>
+            <p id="studentStatus" class="inline-note">No active student session.</p>
+        </section>
+
+        <section class="panel reveal">
+            <div class="panel-head">
+                <h2>Observe What Happens</h2>
+                <p>Students should inspect behavior while each API call runs.</p>
+            </div>
+            <div class="observe-grid">
+                <article class="observe-card">
+                    <h3>Request</h3>
+                    <p>See method, endpoint, and JSON payload sent from browser.</p>
+                </article>
+                <article class="observe-card">
+                    <h3>Response</h3>
+                    <p>Check HTTP status code and how response JSON changes.</p>
+                </article>
+                <article class="observe-card">
+                    <h3>State Change</h3>
+                    <p>Watch how task board updates after API success/failure.</p>
+                </article>
+                <article class="observe-card">
+                    <h3>Validation</h3>
+                    <p>Trigger intentional bad input and inspect `400` messages.</p>
+                </article>
+            </div>
+        </section>
+    </section>
+
+    <section class="layout">
+        <section class="panel reveal">
+            <div class="panel-head">
+                <h2>API Playground</h2>
+                <p>Run endpoints and inspect real responses.</p>
+            </div>
+
+            <div class="play-grid">
+                <div class="form-stack">
+                    <form id="createForm" class="card-form">
+                        <h3>Create Task</h3>
+                        <label>
+                            Title
+                            <input id="createTitle" type="text" placeholder="Example: Prepare assignment" required>
+                        </label>
+                        <label>
+                            Status
+                            <select id="createStatus">
+                                <option value="OPEN">OPEN</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="DONE">DONE</option>
+                            </select>
+                        </label>
+                        <button type="submit">POST /tasks</button>
+                    </form>
+
+                    <form id="updateForm" class="card-form">
+                        <h3>Update Task</h3>
+                        <label>
+                            Task ID
+                            <input id="updateId" type="number" min="1" placeholder="2" required>
+                        </label>
+                        <label>
+                            New Title
+                            <input id="updateTitle" type="text" placeholder="Updated title" required>
+                        </label>
+                        <label>
+                            New Status
+                            <select id="updateStatus">
+                                <option value="OPEN">OPEN</option>
+                                <option value="IN_PROGRESS">IN_PROGRESS</option>
+                                <option value="DONE">DONE</option>
+                            </select>
+                        </label>
+                        <button type="submit">PUT /tasks/{id}</button>
+                    </form>
+                </div>
+
+                <div class="form-stack">
+                    <form id="getByIdForm" class="card-form slim">
+                        <h3>Get Task by ID</h3>
+                        <label>
+                            Task ID
+                            <input id="getId" type="number" min="1" placeholder="1" required>
+                        </label>
+                        <button type="submit">GET /tasks/{id}</button>
+                    </form>
+
+                    <form id="deleteForm" class="card-form slim">
+                        <h3>Delete Task</h3>
+                        <label>
+                            Task ID
+                            <input id="deleteId" type="number" min="1" placeholder="4" required>
+                        </label>
+                        <button type="submit" class="danger">DELETE /tasks/{id}</button>
+                    </form>
+
+                    <div class="quick-actions">
+                        <button id="btnGetAll" type="button">GET /tasks</button>
+                        <button id="btnInfo" type="button">GET /tasks/info</button>
+                        <button id="btn404" type="button">Try 404 Demo</button>
+                        <button id="btn400" type="button">Try 400 Demo</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="response-box">
+                <div class="response-meta">
+                    <strong id="responseTitle">No request yet</strong>
+                    <span id="responseStatus" class="status-chip neutral">status --</span>
+                </div>
+                <pre id="responseOutput">Run an action to see JSON here.</pre>
+            </div>
+        </section>
+
+        <section class="panel reveal">
+            <div class="panel-head">
+                <h2>Live Task Board</h2>
+                <p>Move tasks across states using real API calls.</p>
+            </div>
+
+            <div class="board-actions">
+                <button id="refreshBoard" type="button">Refresh Board</button>
+            </div>
+
+            <div class="board-grid">
+                <section class="column">
+                    <h3>OPEN</h3>
+                    <div id="column-OPEN" class="task-list"></div>
+                </section>
+                <section class="column">
+                    <h3>IN_PROGRESS</h3>
+                    <div id="column-IN_PROGRESS" class="task-list"></div>
+                </section>
+                <section class="column">
+                    <h3>DONE</h3>
+                    <div id="column-DONE" class="task-list"></div>
+                </section>
+            </div>
+        </section>
+    </section>
+
+    <section class="panel reveal">
+        <div class="panel-head">
+            <h2>Challenge Mode</h2>
+            <p>Use this as your live student activity tracker.</p>
+        </div>
+
+        <div class="challenge-wrap">
+            <div class="progress-line">
+                <div id="progressFill"></div>
+            </div>
+            <p id="progressText">0 / 6 completed</p>
+
+            <ul class="challenge-list">
+                <li data-challenge="created">Create a new task</li>
+                <li data-challenge="moved">Move one task to the next status</li>
+                <li data-challenge="seen404">Trigger a 404 response</li>
+                <li data-challenge="seen400">Trigger a 400 response</li>
+                <li data-challenge="inspected">Inspect one API call log entry</li>
+                <li data-challenge="graded">Submit quiz and generate grade report</li>
+            </ul>
+        </div>
+    </section>
+
+    <section class="panel reveal">
+        <div class="panel-head">
+            <h2>Spring Boot Quiz Arena (12 Questions)</h2>
+            <p>Every student submits answers with roll number and gets instant grading.</p>
+        </div>
+        <div id="quizContainer" class="quiz-container"></div>
+        <div class="button-row">
+            <button id="submitQuiz" type="button">Submit Quiz and Grade</button>
+            <button id="resetQuiz" type="button" class="secondary">Reset Answers</button>
+        </div>
+        <p id="quizScoreLine" class="inline-note">Quiz not submitted yet.</p>
+    </section>
+
+    <section class="layout">
+        <section class="panel reveal">
+            <div class="panel-head">
+                <h2>Grade Report</h2>
+                <p>Save report as JSON or TXT and submit in class.</p>
+            </div>
+            <div class="button-row">
+                <button id="downloadJson" type="button">Download JSON Report</button>
+                <button id="downloadTxt" type="button" class="secondary">Download TXT Report</button>
+                <button id="loadLastReport" type="button" class="secondary">Load Last Saved Report</button>
+            </div>
+            <pre id="reportOutput">Generate a quiz grade report to preview it here.</pre>
+        </section>
+
+        <section class="panel reveal">
+            <div class="panel-head">
+                <h2>API Inspector</h2>
+                <p>Observe request timeline, response status, and latency.</p>
+            </div>
+            <div class="button-row">
+                <button id="clearInspector" type="button" class="secondary">Clear Inspector Logs</button>
+            </div>
+            <div class="inspector-grid">
+                <div id="inspectorList" class="inspector-list"></div>
+                <pre id="inspectorDetails">Click any log entry to inspect request and response details.</pre>
+            </div>
+        </section>
+    </section>
+</main>
+
+<script src="app.js"></script>
+</body>
+</html>
